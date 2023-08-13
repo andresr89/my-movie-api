@@ -1,75 +1,93 @@
-from fastapi import FastAPI, Body
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Body, Path, Query
+from fastapi.responses import HTMLResponse, JSONResponse
+from pydantic import BaseModel, Field
+from typing import Optional, List
 
 app = FastAPI()
-app.title = "Mi aplicacion con Fastapi"
+app.title = "Mi aplicación con  FastAPI"
 app.version = "0.0.1"
 
-movies = [
-   {
-      "id":1,
-      "overview": "En un planeta donde viven los navi",
-      "year": "2090",
-      "rating": 7.8,
-      "category" : "Accion"
-    },
+class Movie(BaseModel):
+    id: Optional[int] = None
+    title: str = Field(min_length=3, max_length=15)
+    overview: str = Field(default='Descripcion de la película', min_length=15, max_length=50)
+    year: int = Field(default=2022, le=2022)
+    rating: float = Field(ge=1, le=10)
+    category: str = Field(min_length=3, max_length=10)
 
-    {
-      "id":2,
-      "overview": "En un planeta donde viven los navi",
-      "year": "2090",
-      "rating": 7.8,
-      "category" : "Accion"
+    model_config = {
+     "json_schema_extra": {
+            "examples": [
+                {
+                    "id": 1,
+                    "title": "Mi Pelicula",
+                    "overview": "Descripcion de la pelicula",
+                    "year": 2022,
+                    "rating": 9.9,
+                    "category": "Acción"
+                }
+            ]
+        }
     }
+
+movies = [
+    {
+		"id": 1,
+		"title": "Avatar",
+		"overview": "En un exuberante planeta llamado Pandora viven los Na'vi, seres que ...",
+		"year": "2009",
+		"rating": 7.8,
+		"category": "Acción"
+	},
+    {
+		"id": 2,
+		"title": "Avatar",
+		"overview": "En un exuberante planeta llamado Pandora viven los Na'vi, seres que ...",
+		"year": "2009",
+		"rating": 7.8,
+		"category": "Acción"
+	}
 ]
 
-
-@app.get('/', tags= ['home'])
+@app.get('/', tags=['home'])
 def message():
-    return HTMLResponse ('<h1>hello world</h1>')
+    return HTMLResponse('<h1>Hello world</h1>')
 
-@app.get('/movies', tags =['movies'])
-def get_movies():
-    return movies
+@app.get('/movies', tags=['movies'], response_model=List[Movie])
+def get_movies() -> List[Movie]:
+    return JSONResponse(content=movies)
 
-@app.get ('/movies/{id}',tags= ['movies'])
-def get_movie(id:int):
+@app.get('/movies/{id}', tags=['movies'], response_model=Movie)
+def get_movie(id: int = Path(ge=1, le=2000)) -> Movie:
     for item in movies:
-        if item["id"]==id:
-            return item
-    return []
+        if item["id"] == id:
+            return JSONResponse(content=item)
+    return JSONResponse(content=[])
 
-@app.get ('/movies/', tags = ['movies'])
-def get_movies_By_Category(category:str, year :int):
-    return [item for item in movies if item['category']==category]
+@app.get('/movies/', tags=['movies'], response_model=List[Movie])
+def get_movies_by_category(category: str = Query(min_length=5, max_length=15)) -> List[Movie]:
+    data = [ item for item in movies if item['category'] == category ]
+    return JSONResponse(content=data)
 
-@app.post ('/movies',tags= ['movies'])
-def creae_movie(id:int = Body(), title: str= Body(), overview:str= Body(), year: int = Body(), rating: float = Body(), category : str = Body()):
-    movies.append({
-        "id": id,
-        "title":title,
-        "overview": overview,
-        "year": year,
-        "rating": rating,
-        "category":category
-    })
-    return movies
+@app.post('/movies', tags=['movies'], response_model=dict)
+def create_movie(movie: Movie) -> dict:
+    movies.append(movie)
+    return JSONResponse(content={"message": "Se ha registrado la película"})
 
-@app.put ('/movies/{id}', tags= ['movies'])
-def update_movie(id:int , title: str= Body(), overview:str= Body(), year: int = Body(), rating: float = Body(), category : str = Body()):
+@app.put('/movies/{id}', tags=['movies'], response_model=dict)
+def update_movie(id: int, movie: Movie)-> dict:
+	for item in movies:
+		if item["id"] == id:
+			item['title'] = movie.title
+			item['overview'] = movie.overview
+			item['year'] = movie.year
+			item['rating'] = movie.rating
+			item['category'] = movie.category
+			return JSONResponse(content={"message": "Se ha modificado la película"})
+
+@app.delete('/movies/{id}', tags=['movies'], response_model=dict)
+def delete_movie(id: int)-> dict:
     for item in movies:
-        if item["id"]==id:
-            item['title']= title,
-            item['overview']= overview,
-            item['year']= year,
-            item['rating']= rating,
-            item['category']= category,
-            return movies
-            
-            
-@app.delete ('/movies/{id}', tags= ['movies'])
-def delete_movie(id: int):
-    for item in movies:
-        if item["id"]==id:
+        if item["id"] == id:
             movies.remove(item)
-            return movies
+            return JSONResponse(content={"message": "Se ha eliminado la película"})
