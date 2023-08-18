@@ -71,7 +71,7 @@ movies = [
 def message():
     return HTMLResponse('<h1>Hello world</h1>')
 
-@app.post('/login', tags=['auth'])
+
 def login(user: User):
     if user.email == "admin@gmail.com" and user.password == "admin":
         token: str = create_token(user.dict())
