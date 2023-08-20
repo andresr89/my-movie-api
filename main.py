@@ -72,15 +72,15 @@ def message():
     return HTMLResponse('<h1>Hello world</h1>')
 
 
+@app.post('/login', tags=['auth'])
 def login(user: User):
     if user.email == "admin@gmail.com" and user.password == "admin":
         token: str = create_token(user.dict())
         return JSONResponse(status_code=200, content=token)
 
-
-@app.get('/movies', tags=['movies'], response_model=List[Movie], status_code= 200, dependencies=[Depends(JWTBearer())])
+@app.get('/movies', tags=['movies'], response_model=List[Movie], status_code=200, dependencies=[Depends(JWTBearer())])
 def get_movies() -> List[Movie]:
-    return JSONResponse(status_code=200 ,content=movies)
+    return JSONResponse(status_code=200, content=movies)
 
 @app.get('/movies/{id}', tags=['movies'], response_model=Movie)
 def get_movie(id: int = Path(ge=1, le=2000)) -> Movie:
@@ -94,12 +94,12 @@ def get_movies_by_category(category: str = Query(min_length=5, max_length=15)) -
     data = [ item for item in movies if item['category'] == category ]
     return JSONResponse(content=data)
 
-@app.post('/movies', tags=['movies'], response_model=dict, status_code= 201)
+@app.post('/movies', tags=['movies'], response_model=dict, status_code=201)
 def create_movie(movie: Movie) -> dict:
     movies.append(movie)
-    return JSONResponse(status_code= 201, content={"message": "Se ha registrado la película"})
+    return JSONResponse(status_code=201, content={"message": "Se ha registrado la película"})
 
-@app.put('/movies/{id}', tags=['movies'], response_model=dict, status_code= 200)
+@app.put('/movies/{id}', tags=['movies'], response_model=dict, status_code=200)
 def update_movie(id: int, movie: Movie)-> dict:
 	for item in movies:
 		if item["id"] == id:
@@ -110,7 +110,7 @@ def update_movie(id: int, movie: Movie)-> dict:
 			item['category'] = movie.category
 			return JSONResponse(status_code=200, content={"message": "Se ha modificado la película"})
 
-@app.delete('/movies/{id}', tags=['movies'], response_model=dict,status_code=200)
+@app.delete('/movies/{id}', tags=['movies'], response_model=dict, status_code=200)
 def delete_movie(id: int)-> dict:
     for item in movies:
         if item["id"] == id:
