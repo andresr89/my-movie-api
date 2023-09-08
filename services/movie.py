@@ -18,9 +18,25 @@ class MovieService():
         result = self.db.query(MovieModel).filter(MovieModel.category == category).all()
         return result
     
-    def create_movie (self,movie :Movie):
-        new_movie = MovieModel (**movie.dict())
-        self.db.add (new_movie)
+    def create_movie(self, movie: Movie):
+        new_movie = MovieModel(**movie.dict())
+        self.db.add(new_movie)
         self.db.commit()
-        return 
+        return
+    
+    def update_movie (self, id:int, data :Movie):
+        movie = self.db.query (MovieModel).filter(MovieModel.id == id).first()
+        movie.title = data.title
+        movie.overview = data.overview
+        movie.year = data.year
+        movie.rating = data.rating
+        movie.category = data.category
+        self.db.commit()
+        return
+    
+    def delete_movie (self,id):
+        self.db.query(MovieModel).filter(MovieModel.id == id).delete()
+        self.db.commit()
+        return
+    
     
