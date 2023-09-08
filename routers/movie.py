@@ -56,7 +56,7 @@ def get_movie(id: int = Path(ge=1, le=2000)) -> Movie:
 @movie_router.get('/movies/', tags=['movies'], response_model=List[Movie])
 def get_movies_by_category(category: str = Query(min_length=5, max_length=15)) -> List[Movie]:
     db = Session ()
-    result = MovieService(db).get_movie(category)
+    result = MovieService(db).get_movies_by_category(category)
     return JSONResponse(status_code=200, content=jsonable_encoder (result))
 
 @movie_router.post('/movies', tags=['movies'], response_model=dict, status_code=201)
