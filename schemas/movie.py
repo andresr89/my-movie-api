@@ -5,7 +5,7 @@ class Movie(BaseModel):
     id: Optional[int] = None
     title: str = Field(min_length=3, max_length=15)
     overview: str = Field(default='Descripcion de la película', min_length=15, max_length=50)
-    year: int = Field(default=2022, le=2022)
+    year: int = Field(default=2022, le=2023)
     rating: float = Field(ge=1, le=10)
     category: str = Field(min_length=3, max_length=10)
 
